@@ -1,0 +1,1 @@
+Store trained model artifacts here. Large binaries should be managed with Git LFS or excluded from Git history.

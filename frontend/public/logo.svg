@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="VitalSense AI logo">
+  <rect width="120" height="120" rx="24" fill="#0b1b2b"/>
+  <circle cx="60" cy="60" r="34" fill="#1b6ef3" opacity="0.25"/>
+  <path d="M32 60h18l8-18 10 36 8-18h12" fill="none" stroke="#7dd3fc" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

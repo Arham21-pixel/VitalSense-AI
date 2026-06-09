@@ -1,0 +1,1 @@
+Run this script to simulate real-time EMR updates for the demo environment.

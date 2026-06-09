@@ -1,0 +1,1 @@
+Shared frontend components for the VitalSense AI dashboard.
