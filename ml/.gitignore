@@ -1,0 +1,23 @@
+# Bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+.env
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Generated model artifacts and analysis outputs
+saved_models/*.pkl
+saved_models/*.png
+saved_models/*.csv
+saved_models/*.txt
+
+# OS files
+.DS_Store
+Thumbs.db

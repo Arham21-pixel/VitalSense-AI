@@ -4,4 +4,8 @@ scikit-learn
 xgboost
 shap
 torch
+flask
+matplotlib
+seaborn
+joblib
 jupyter
