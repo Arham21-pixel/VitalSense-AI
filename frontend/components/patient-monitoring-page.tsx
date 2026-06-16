@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import { getPatients, type PatientRecord } from '@/lib/api'
+import { getPatients, type PatientRecord, type PredictionResult, createPredictionWebSocket } from '@/lib/api'
 
 const summaryCards = [
   { label: 'Total Patients', icon: Users, tone: 'emerald' },
@@ -63,6 +63,68 @@ function EmptyState({
   )
 }
 
+function SelectedReport({
+  patient,
+  prediction,
+}: {
+  patient: PatientRecord | null
+  prediction: PredictionResult | null
+}) {
+  if (!patient) {
+    return (
+      <EmptyState
+        title="No patient selected"
+        description="Click a patient row to view live report data."
+      />
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-border/50 bg-muted/20 p-3.5">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-foreground">{patient.patient_id} — {patient.bed_number ?? 'Bed N/A'}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Status: {patient.status ?? 'Unknown'}</p>
+          </div>
+          <div className="text-right text-xs text-muted-foreground">
+            <div>Live</div>
+            <div className="mt-1 text-foreground">{prediction ? new Date(prediction.timestamp).toLocaleTimeString() : '—'}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-xl border border-border/50 bg-muted/20 p-3.5">
+          <p className="text-xs font-semibold text-foreground">Vitals</p>
+          <ul className="mt-2 text-sm text-foreground space-y-1">
+            <li>Heart rate: <span className="font-medium">{patient.heart_rate} bpm</span></li>
+            <li>Temperature: <span className="font-medium">{patient.temperature} °C</span></li>
+            <li>Respiratory rate: <span className="font-medium">{patient.respiratory_rate}</span></li>
+            <li>SpO2: <span className="font-medium">{patient.spo2}%</span></li>
+            <li>Systolic BP: <span className="font-medium">{patient.systolic_bp}</span></li>
+          </ul>
+        </div>
+
+        <div className="rounded-xl border border-border/50 bg-muted/20 p-3.5">
+          <p className="text-xs font-semibold text-foreground">AI Prediction</p>
+          {prediction ? (
+            <div className="mt-2 text-sm text-foreground space-y-1">
+              <div>Risk score: <span className="font-medium">{prediction.risk_score.toFixed(2)}</span></div>
+              <div>Risk level: <span className="font-medium">{prediction.risk_level}</span></div>
+              <div>Alert: <span className="font-medium">{prediction.alert ? 'Yes' : 'No'}</span></div>
+              <div>Priority: <span className="font-medium">{prediction.priority}</span></div>
+              <div>Model: <span className="font-medium">{prediction.model_version}</span></div>
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">No live prediction yet for this patient.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function getStatusBadge(status: string | undefined) {
   switch (status) {
     case 'CRITICAL':
@@ -83,6 +145,8 @@ export function PatientMonitoringPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null)
+  const [livePredictions, setLivePredictions] = useState<Record<string, PredictionResult>>({})
 
   useEffect(() => {
     let mounted = true
@@ -128,6 +192,35 @@ export function PatientMonitoringPage() {
   const highRiskCount = patients.filter((patient) => ['HIGH RISK', 'CRITICAL'].includes(patient.status ?? '')).length
   const criticalCount = patients.filter((patient) => patient.status === 'CRITICAL').length
   const stableCount = patients.filter((patient) => patient.status === 'STABLE').length
+
+  useEffect(() => {
+    let socket: WebSocket | null = null
+    try {
+      socket = createPredictionWebSocket((payload) => {
+        // Expect payload to be an array of predictions or a single prediction
+        const items = Array.isArray(payload) ? payload : [payload]
+        setLivePredictions((prev) => {
+          const next = { ...prev }
+          for (const p of items) {
+            if (p && typeof p === 'object' && 'patient_id' in p) {
+              next[(p as PredictionResult).patient_id] = p as PredictionResult
+            }
+          }
+          return next
+        })
+      })
+    } catch (err) {
+      // ignore websocket initialization errors for now
+    }
+
+    return () => {
+      if (socket) {
+        try {
+          socket.close()
+        } catch {}
+      }
+    }
+  }, [])
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -247,7 +340,11 @@ export function PatientMonitoringPage() {
                         </tr>
                       ) : (
                         filteredPatients.map((patient) => (
-                          <tr key={patient.patient_id} className="border-b border-border/80">
+                          <tr
+                            key={patient.patient_id}
+                            className={cn('border-b border-border/80 hover:cursor-pointer', selectedPatientId === patient.patient_id ? 'bg-primary/10' : '')}
+                            onClick={() => setSelectedPatientId(patient.patient_id)}
+                          >
                             <td className="px-4 py-4 font-medium text-foreground">{patient.patient_id}</td>
                             <td className="px-4 py-4 text-muted-foreground">{patient.heart_rate} bpm</td>
                             <td className="px-4 py-4 text-muted-foreground">{patient.bed_number ?? 'N/A'}</td>
@@ -267,14 +364,26 @@ export function PatientMonitoringPage() {
               <SectionCard
                 title="Selected Report"
                 subtitle="A patient report panel will appear here when a row is selected."
-                action={<span className="text-xs text-muted-foreground">No selection</span>}
+                action={
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{selectedPatientId ?? 'No selection'}</span>
+                    {selectedPatientId && (
+                      <button
+                        onClick={() => setSelectedPatientId(null)}
+                        className="text-xs text-foreground/80 hover:text-foreground"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                }
               >
                 {filteredPatients.length === 0 ? (
                   <EmptyState
                     title="No data available"
                     description="Patient details will populate once a backend connection is active."
                   />
-                ) : (
+                ) : selectedPatientId == null ? (
                   <div className="space-y-4">
                     <div className="rounded-xl border border-border/50 bg-muted/20 p-3.5">
                       <p className="text-xs font-semibold text-foreground">Vitals overview</p>
@@ -289,6 +398,11 @@ export function PatientMonitoringPage() {
                       ))}
                     </div>
                   </div>
+                ) : (
+                  <SelectedReport
+                    patient={patients.find((p) => p.patient_id === selectedPatientId) ?? null}
+                    prediction={livePredictions[selectedPatientId] ?? null}
+                  />
                 )}
               </SectionCard>
             </div>
