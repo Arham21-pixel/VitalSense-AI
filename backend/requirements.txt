@@ -1,6 +1,8 @@
 fastapi
-uvicorn[standard]
+uvicorn
 pydantic
-psycopg2-binary
-python-dotenv
 websockets
+httpx
+python-dotenv
+pandas
+numpy

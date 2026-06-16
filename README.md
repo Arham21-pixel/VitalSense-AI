@@ -1,30 +1,43 @@
-# VitalSense AI
+# VitalSense AI 🏥
+> "We don't wait for sepsis. We predict it."
 
-VitalSense AI is a scaffold for a real-time ICU sepsis prediction platform. The repo is split so the frontend, backend, ML work, simulator, and docs can be developed in parallel by different teammates.
+## 🚀 Quick Start
 
-## Layout
+### 1. Backend
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
 
-- `frontend/` - Next.js app for the dashboard and patient views
-- `backend/` - FastAPI API layer, schema models, database hook, and WebSocket manager
-- `ml/` - preprocessing, feature engineering, model training, and explainability notebooks
-- `data-simulator/` - fake EMR stream for demos
-- `docs/` - architecture, API reference, and demo setup notes
+### 2. Data Simulator
+```bash
+cd data-simulator
+pip install -r requirements.txt
+python simulator.py
+```
 
-## Working Split
+### 3. Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-For collaboration, keep feature work isolated by area and branch name. A practical pattern is:
+Open http://localhost:3000
 
-- `feature/frontend-*` for UI work
-- `feature/backend-*` for API and database work
-- `feature/ml-*` for model and notebook work
-- `feature/simulator-*` for streaming and demo data
+## 🏗️ Architecture
+EMR Stream → FastAPI Backend → LSTM + XGBoost ML → SHAP Explainer → React Dashboard
 
-## Getting Started
+## 👥 Team GIT SUMMER
+| Member | Role |
+|---|---|
+| Saif Ur Rahman | AI/ML Architecture & Clinical Intelligence |
+| Arham Boonlia | Frontend Engineering & Data Infrastructure |
 
-1. Copy `.env.example` to `.env`.
-2. Install dependencies inside the folder you are working in.
-3. Run the frontend, backend, or ML notebooks independently while the scaffold is being filled in.
+## 🔗 Live Demo
+Coming soon
 
-## Current State
+## 📸 Screenshots
+Coming soon
 
-This checkout now contains the full project skeleton and starter files, not the finished product. The next step is to implement the actual UI, API logic, simulator flow, and model pipeline.
