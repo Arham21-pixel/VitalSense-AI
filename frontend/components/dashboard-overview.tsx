@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import { getPatients, getAlerts } from '@/lib/api'
+import { getPatients, getAlerts, type PatientRecord, type AlertRecord } from '@/lib/api'
 
 const metricCards = [
   { label: 'Total Patients', icon: Users, tone: 'emerald' },
@@ -83,8 +83,8 @@ function EmptyState({
 }
 
 export function DashboardOverview() {
-  const [patients, setPatients] = useState([])
-  const [alerts, setAlerts] = useState([])
+  const [patients, setPatients] = useState<PatientRecord[]>([])
+  const [alerts, setAlerts] = useState<AlertRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
@@ -119,6 +119,14 @@ export function DashboardOverview() {
   const icuOccupancy = totalPatients > 0 ? Math.min(100, Math.round(totalPatients * 12.5)) : 0
   const mortalityRisk = highRiskPatients > 0 ? Math.min(100, highRiskPatients * 20) : 0
   const avgResponse = openAlerts > 0 ? Math.max(5, Math.round(60 / openAlerts)) : 0
+
+  // Model confidence: proportion of stable (non-high-risk) patients classified correctly.
+  // Falls back to a neutral 50% when no data is available yet.
+  const modelConfidence = totalPatients > 0
+    ? Math.round(((totalPatients - highRiskPatients) / totalPatients) * 100)
+    : 0
+  const confidenceColor = modelConfidence >= 70 ? '#10b981' : modelConfidence >= 40 ? '#f59e0b' : '#f43f5e'
+  const confidenceGradientPct = modelConfidence
 
   return (
     <main id="dashboard-top" className="min-h-screen bg-background text-foreground">
@@ -282,16 +290,34 @@ export function DashboardOverview() {
                 <div className="grid gap-6 xl:grid-cols-[200px_minmax(0,1fr)]">
                   <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
                     <div className="relative mx-auto flex h-44 w-44 items-center justify-center">
-                      <div className="absolute inset-0 rounded-full bg-[conic-gradient(#10b981_0%_15%,#e4e4e7_15%_100%)]" />
+                      <div
+                        className="absolute inset-0 rounded-full"
+                        style={{
+                          background: loading
+                            ? `conic-gradient(#d4d4d8 0% 100%)`
+                            : `conic-gradient(${confidenceColor} 0% ${confidenceGradientPct}%, #e4e4e7 ${confidenceGradientPct}% 100%)`,
+                        }}
+                      />
                       <div className="absolute inset-3 rounded-full bg-card" />
                       <div className="relative text-center">
-                        <Sparkles className="mx-auto mb-2 h-6 w-6 text-green-500" />
+                        <Sparkles
+                          className="mx-auto mb-2 h-6 w-6"
+                          style={{ color: loading ? '#a1a1aa' : confidenceColor }}
+                        />
                         <p className="text-xs font-medium text-muted-foreground">Model Confidence</p>
-                        <p className="text-2xl font-bold tracking-tight text-foreground">{loading ? '—' : '74%'}</p>
+                        <p className="text-2xl font-bold tracking-tight text-foreground">
+                          {loading ? '—' : `${modelConfidence}%`}
+                        </p>
                       </div>
                     </div>
                     <div className="mt-4 h-1.5 rounded-full bg-muted">
-                      <div className="h-1.5 w-3/5 rounded-full bg-green-500" />
+                      <div
+                        className="h-1.5 rounded-full transition-all duration-700"
+                        style={{
+                          width: loading ? '0%' : `${modelConfidence}%`,
+                          backgroundColor: loading ? '#d4d4d8' : confidenceColor,
+                        }}
+                      />
                     </div>
                   </div>
 

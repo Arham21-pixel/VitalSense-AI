@@ -99,6 +99,23 @@ export const dismissAlert = async (alertId: string): Promise<void> => {
   })
 }
 
+export const runPrediction = async (patient: PatientRecord): Promise<PredictionResult> => {
+  return safeFetch<PredictionResult>('/predict', {
+    method: 'POST',
+    body: JSON.stringify({
+      patient_id: patient.patient_id,
+      heart_rate: patient.heart_rate,
+      temperature: patient.temperature,
+      respiratory_rate: patient.respiratory_rate,
+      spo2: patient.spo2,
+      systolic_bp: patient.systolic_bp,
+      wbc: patient.wbc,
+      lactate: patient.lactate,
+      creatinine: patient.creatinine,
+    }),
+  })
+}
+
 export const createPredictionWebSocket = (
   onMessage: (message: unknown) => void,
   onOpen?: () => void,
