@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Eye, EyeOff, HeartPulse, CheckCircle2, ChevronRight, Mail, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Logo } from '../Logo'
 
 export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -16,13 +17,8 @@ export function LoginPage() {
           <div className="absolute -left-24 top-8 h-72 w-72 rounded-full bg-[#16b57b]/10 blur-3xl" />
           <div className="absolute bottom-0 right-0 h-64 w-64 rounded-full bg-[#00A86B]/10 blur-3xl" />
 
-          <div className="relative z-10 flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#0fb983] to-[#16a34a] text-white shadow-lg shadow-emerald-500/20">
-              <HeartPulse className="h-4 w-4" />
-            </div>
-            <span className="text-[1.15rem] font-semibold tracking-tight text-[#102030]">
-              VitalSense AI
-            </span>
+          <div className="relative z-10 flex items-center">
+            <Logo className="scale-[0.85] origin-left" />
           </div>
 
           <div className="relative z-10 mt-10 max-w-xl">

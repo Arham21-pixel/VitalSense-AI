@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Mail, MessageCircle, Share2 } from 'lucide-react'
+import { Logo } from './Logo'
 
 export function Footer() {
   const footerLinks = [
@@ -56,11 +57,8 @@ export function Footer() {
       <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
         <div className="grid grid-cols-2 gap-12 md:grid-cols-5">
           <div className="col-span-2 md:col-span-1">
-            <div className="mb-6 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm">
-                V
-              </div>
-              <span className="text-lg font-bold tracking-tight">VitalSense</span>
+            <div className="mb-6 flex items-center">
+              <Logo className="scale-75 origin-left" />
             </div>
             <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
               AI-powered sepsis prediction for ICU teams. Modern healthcare intelligence.

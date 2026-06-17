@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { LockKeyhole, Menu, X } from 'lucide-react'
 import { PrimaryNavigation } from '@/components/primary-navigation'
 import { VoiceAssistant } from '@/components/VoiceAssistant'
+import { Logo, LogoIcon } from '@/components/Logo'
 
 export default function AppShellLayout({
   children,
@@ -25,20 +26,14 @@ export default function AppShellLayout({
             <Menu className="h-4 w-4" />
             Menu
           </button>
-          <div className="text-lg font-semibold">VitalSense</div>
+          <Logo className="scale-[0.55] origin-right" />
         </div>
 
         <div className="grid min-h-[calc(100vh-2rem)] gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
           <aside className="hidden lg:block lg:sticky lg:top-4 lg:self-start">
             <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-sm">
-                  V
-                </div>
-                <div>
-                  <p className="text-sm font-semibold tracking-tight text-foreground">VitalSense AI</p>
-                  <p className="text-xs text-muted-foreground">Patient monitoring</p>
-                </div>
+              <div className="flex items-center">
+                <Logo className="scale-[0.65] origin-left" />
               </div>
 
               <div className="mt-6">
@@ -72,7 +67,7 @@ export default function AppShellLayout({
         <div className="fixed inset-0 z-50 bg-foreground/20 backdrop-blur-sm lg:hidden">
           <div className="absolute inset-y-0 left-0 w-[85%] max-w-sm bg-background p-6 shadow-2xl">
             <div className="mb-6 flex items-center justify-between">
-              <div className="text-lg font-semibold">Navigation</div>
+              <Logo className="scale-[0.6] origin-left" />
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
+import { Logo } from './Logo'
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -18,11 +19,8 @@ export function Navbar() {
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-sm group-hover:shadow-md transition-all duration-300">
-              V
-            </div>
-            <span className="hidden sm:inline font-bold text-foreground tracking-tight text-lg">VitalSense</span>
+          <Link href="/" className="flex items-center group">
+            <Logo className="scale-75 origin-left" />
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
@@ -65,11 +63,8 @@ export function Navbar() {
         <div className="fixed inset-0 z-50 bg-foreground/20 backdrop-blur-sm md:hidden">
           <div className="absolute inset-y-0 left-0 w-[85%] max-w-sm bg-background border-r border-border/70 p-6 shadow-xl">
             <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-sm">
-                  V
-                </div>
-                <span className="text-lg font-bold text-foreground">VitalSense</span>
+              <div className="flex items-center">
+                <Logo className="scale-75 origin-left" />
               </div>
               <button
                 type="button"
