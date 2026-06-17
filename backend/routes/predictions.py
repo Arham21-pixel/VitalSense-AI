@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict
 from models.schemas import PatientVitals, PredictionResult
 from routes.patients import patients_db, update_patient_vitals
-from routes.alerts import alerts_db, PRIORITY_ORDER
+from routes.alerts import alerts_db, PRIORITY_ORDER, next_alert_id
 import pandas as pd
 import os
 import sys
@@ -118,7 +118,7 @@ def predict(vitals: PatientVitals):
             if factors_str:
                 message += f" Triggered by: {factors_str}."
 
-            alert_id = f"A{len(alerts_db) + 1:03d}"
+            alert_id = next_alert_id()
             alert_obj = {
                 "alert_id": alert_id,
                 "patient_id": pid,

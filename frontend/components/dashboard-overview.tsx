@@ -15,12 +15,15 @@ import {
   Sparkles,
   TrendingUp,
   Users,
+  Volume2,
+  VolumeX,
   Workflow,
   Zap,
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { getPatients, getAlerts, type PatientRecord, type AlertRecord } from '@/lib/api'
+import { playAlertSoundIfUnmuted, isSoundMuted, toggleSoundMute } from '@/lib/sound'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function relativeTime(iso: string) {
@@ -420,7 +423,21 @@ export function DashboardOverview() {
   const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [muted, setMuted] = useState(false)
+
+  const knownAlertIds = useRef<Set<string>>(new Set())
+  const isFirstLoad = useRef(true)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Sync muted state from sessionStorage on mount
+  useEffect(() => {
+    setMuted(isSoundMuted())
+  }, [])
+
+  const handleToggleMute = () => {
+    const newMuted = toggleSoundMute()
+    setMuted(newMuted)
+  }
 
   const fetchAll = useCallback(async (silent = false) => {
     try {
@@ -431,6 +448,28 @@ export function DashboardOverview() {
         getPatients(),
         getAlerts(), // active only
       ])
+
+      // ── New-alert detection & sound ──────────────────────────────────────
+      if (!isFirstLoad.current) {
+        // Find active alerts that weren't in our known set
+        const newActive = loadedAlerts.filter(
+          (a) => !a.dismissed && !knownAlertIds.current.has(a.alert_id)
+        )
+        if (newActive.length > 0) {
+          // Play the sound for the highest priority new alert
+          const priorities = ['CRITICAL', 'HIGH', 'WARNING', 'NORMAL']
+          const topPriority = priorities.find((p) =>
+            newActive.some((a) => a.priority === p)
+          ) ?? 'NORMAL'
+          playAlertSoundIfUnmuted(topPriority)
+        }
+      } else {
+        isFirstLoad.current = false
+      }
+
+      // Update known IDs with all alerts from this fetch
+      loadedAlerts.forEach((a) => knownAlertIds.current.add(a.alert_id))
+
       setPatients(loadedPatients)
       setAlerts(loadedAlerts)
       setLastUpdated(new Date())
@@ -494,6 +533,23 @@ export function DashboardOverview() {
                     {lastUpdated.toLocaleTimeString()}
                   </span>
                 )}
+                
+                {/* Mute toggle */}
+                <button
+                  type="button"
+                  onClick={handleToggleMute}
+                  title={muted ? 'Unmute alert sounds' : 'Mute alert sounds'}
+                  className={cn(
+                    'inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-sm shadow-sm transition-colors',
+                    muted
+                      ? 'border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100'
+                      : 'border-border bg-card text-foreground hover:bg-accent',
+                  )}
+                >
+                  {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                  <span className="hidden sm:inline">{muted ? 'Sounds off' : 'Sounds on'}</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => fetchAll(true)}

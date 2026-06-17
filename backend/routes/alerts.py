@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
-from typing import List, Dict, Any
+import re
 from datetime import datetime
+from fastapi import APIRouter, HTTPException
+from typing import Any, Dict, List
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
@@ -19,6 +20,15 @@ alerts_db: List[Dict[str, Any]] = [
 ]
 
 PRIORITY_ORDER = {"CRITICAL": 1, "HIGH": 2, "WARNING": 3, "NORMAL": 4}
+
+
+def next_alert_id() -> str:
+    max_id = 0
+    for alert in alerts_db:
+        match = re.fullmatch(r"A(\d+)", str(alert.get("alert_id", "")))
+        if match:
+            max_id = max(max_id, int(match.group(1)))
+    return f"A{max_id + 1:03d}"
 
 
 @router.get("")
