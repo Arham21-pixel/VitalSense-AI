@@ -31,6 +31,10 @@ app.include_router(settings_router)
 # WebSocket manager
 manager = ConnectionManager()
 
+# Make manager available to routes/predictions.py
+import routes.predictions
+routes.predictions.manager = manager
+
 
 @app.get("/")
 def root():

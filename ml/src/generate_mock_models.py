@@ -5,14 +5,9 @@ import pandas as pd
 from pathlib import Path
 import torch
 
-# Add current folder to sys.path so we can import local modules
-src_path = Path(__file__).resolve().parent
-if str(src_path) not in sys.path:
-    sys.path.append(str(src_path))
-
-from xgboost_model import XGBoostModel
-from lstm_model import LSTMModel
-from settings import SAVED_MODELS_DIR, DATA_DIR, ensure_dirs, PRODUCTION_FEATURE_COLUMNS
+from .xgboost_model import XGBoostModel
+from .lstm_model import LSTMModel
+from .settings import SAVED_MODELS_DIR, DATA_DIR, ensure_dirs, PRODUCTION_FEATURE_COLUMNS
 
 def generate_synthetic_data(num_patients=100, hours_per_patient=24):
     np.random.seed(42)
@@ -161,7 +156,7 @@ def main():
     # 2. Train LSTM
     print("\nTraining PyTorch LSTM model...")
     # Generate sequence tensor
-    from features import make_sequence_tensor
+    from .features import make_sequence_tensor
     X_seq, y_seq, _ = make_sequence_tensor(df, window_size=12)
     
     if len(X_seq) > 0:

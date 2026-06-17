@@ -5,9 +5,12 @@ from typing import Iterable, List
 import numpy as np
 import pandas as pd
 
-from .settings import PRODUCTION_FEATURE_COLUMNS
-from .utils import ensure_numeric_frame, fill_clinical_values, normalize_hour_column
-
+try:
+    from .settings import PRODUCTION_FEATURE_COLUMNS
+    from .utils import ensure_numeric_frame, fill_clinical_values, normalize_hour_column
+except ImportError:
+    from settings import PRODUCTION_FEATURE_COLUMNS
+    from utils import ensure_numeric_frame, fill_clinical_values, normalize_hour_column
 
 ID_COLUMNS = {"subject_id", "hadm_id", "stay_id"}
 NON_FEATURE_COLUMNS = ID_COLUMNS | {"sepsis_label", "hour"}

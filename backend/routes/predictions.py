@@ -7,6 +7,7 @@ from routes.alerts import alerts_db, PRIORITY_ORDER, next_alert_id
 import pandas as pd
 import os
 import sys
+import uuid
 
 router = APIRouter(tags=["predictions"])
 
@@ -36,11 +37,11 @@ def predict(vitals: PatientVitals):
 
     # 2. Try to call ml predict()
     try:
-        src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../ml/src'))
+        src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../ml'))
         if src_path not in sys.path:
             sys.path.append(src_path)
 
-        from predict import predict as ml_predict
+        from src.predict import predict as ml_predict
         prediction = ml_predict(patient_series)
         ml_success = True
     except Exception:

@@ -575,9 +575,9 @@ export function AlertCenterPage() {
                 </div>
               ) : (
                 <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-                  {displayAlerts.map((alert) => (
+                  {displayAlerts.map((alert, index) => (
                     <AlertRow
-                      key={alert.alert_id}
+                      key={`${alert.alert_id}-${index}`}
                       alert={alert}
                       onDismiss={handleDismiss}
                       dismissing={dismissingId === alert.alert_id}

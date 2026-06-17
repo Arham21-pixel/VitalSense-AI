@@ -180,10 +180,10 @@ function LiveAlertsList({ alerts }: { alerts: AlertRecord[] }) {
 
   return (
     <div className="space-y-2">
-      {active.map(alert => {
+      {active.map((alert, index) => {
         const c = priorityColor(alert.priority)
         return (
-          <div key={alert.alert_id} className="flex items-start gap-2.5 rounded-lg border border-border/50 bg-muted/20 p-2.5">
+          <div key={`${alert.alert_id}-${alert.timestamp}-${index}`} className="flex items-start gap-2.5 rounded-lg border border-border/50 bg-muted/20 p-2.5">
             <span className={cn('mt-1 h-2 w-2 rounded-full flex-shrink-0 animate-pulse', c.dot)} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
@@ -711,6 +711,11 @@ export function DashboardOverview() {
           </div>
 
         </div>
+      </div>
+
+      {/* Voice Assistant Hint */}
+      <div className="mx-auto mt-4 flex max-w-[1720px] items-center gap-2.5 rounded-xl border border-[#00B4D8]/15 bg-gradient-to-r from-[#00B4D8]/[0.06] to-[#00B4D8]/[0.02] px-5 py-3 text-sm font-medium text-muted-foreground">
+        💡 Press <strong className="text-[#00B4D8]">spacebar</strong> or click <strong className="text-[#00B4D8]">🎙️</strong> to talk to AI Assistant
       </div>
     </main>
   )

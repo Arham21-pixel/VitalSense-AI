@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { LockKeyhole, Menu, X } from 'lucide-react'
 import { PrimaryNavigation } from '@/components/primary-navigation'
+import { VoiceAssistant } from '@/components/VoiceAssistant'
 
 export default function AppShellLayout({
   children,
@@ -64,6 +65,8 @@ export default function AppShellLayout({
           <div className="flex min-w-0 flex-col gap-4">{children}</div>
         </div>
       </div>
+
+      <VoiceAssistant />
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 bg-foreground/20 backdrop-blur-sm lg:hidden">
