@@ -11,8 +11,15 @@ from .utils import utc_now_iso, clamp01, threshold_for_risk
 from .shap_explainer import explain_instance
 
 
+_cached_models: Dict[str, Any] | None = None
+
+
 def _load_models():
     """Attempt to lazily load saved models if present. Returns dict."""
+    global _cached_models
+    if _cached_models is not None:
+        return _cached_models
+
     models = {}
     xgb_path = Path(ARTIFACT_DIR) / "xgb_model.pkl"
     lstm_path = Path(ARTIFACT_DIR) / "lstm_model.pt"
@@ -34,6 +41,7 @@ def _load_models():
     except Exception as e:
         print(f"LSTM load error: {e}")
 
+    _cached_models = models
     return models
 
 

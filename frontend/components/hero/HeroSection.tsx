@@ -16,7 +16,7 @@ const container = {
       delayChildren: 0.2,
     },
   },
-}
+} as const
 
 const item = {
   hidden: { opacity: 0, y: 20 },
@@ -28,7 +28,7 @@ const item = {
       ease: 'easeOut',
     },
   },
-}
+} as const
 
 export function HeroSection() {
   return (

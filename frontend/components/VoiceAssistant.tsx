@@ -71,6 +71,7 @@ export function VoiceAssistant() {
   const finalTranscriptRef = useRef("")
   const explicitStopRef = useRef(false)
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const hasErrorRef = useRef(false)
 
   // Keep refs in sync to prevent stale closure bugs in SpeechRecognition callbacks
   const patientsRef = useRef(patients)
@@ -166,6 +167,8 @@ export function VoiceAssistant() {
         // Ignore no-speech so it doesn't kill the session if they are just thinking
         return
       }
+      hasErrorRef.current = true
+      explicitStopRef.current = true // Stop auto-restart loop on real error
       if (event.error === "network") {
         setErrorMsg("Network error: Edge's speech service is unreachable. Try Chrome, check VPN, or verify permissions.")
       } else {
@@ -177,6 +180,13 @@ export function VoiceAssistant() {
 
     recognition.onend = () => {
       clearSilenceTimer()
+      
+      // If we had a critical error, do not auto-restart
+      if (hasErrorRef.current) {
+        setStatus("error")
+        return
+      }
+
       if (!explicitStopRef.current) {
         // The browser automatically stopped it due to a pause or quiet voice.
         // We restart it immediately to keep listening!
@@ -212,6 +222,7 @@ export function VoiceAssistant() {
     setErrorMsg("")
     setStatus("listening")
     explicitStopRef.current = false
+    hasErrorRef.current = false
     clearSilenceTimer()
     try { recognition.start() } catch { /* already started */ }
   }, [getRecognition, clearSilenceTimer])
@@ -307,28 +318,42 @@ Rules:
 
   /* ── Text-to-Speech ── */
   const speak = (text: string) => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return
+
+    window.speechSynthesis.cancel() // Cancel any ongoing speech to prevent hanging on Edge
+
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.lang = "en-US" // Strictly force English language
     utterance.rate = 0.95
     utterance.pitch = 1.0
     utterance.volume = 1.0
-    const voices = speechSynthesis.getVoices()
     
-    // Prioritize local English voices to bypass cloud TTS latency on Edge
+    const voices = window.speechSynthesis.getVoices()
+    
+    // Prioritize local English voices to bypass cloud TTS latency on Edge.
+    // Filter out remote/online/natural voices.
     let selectedVoice = voices.find((v) => 
       v.lang.startsWith("en") && 
       v.localService === true &&
+      !v.name.includes("Online") &&
+      !v.name.includes("Natural") &&
       (v.name.includes("Google") || v.name.includes("Samantha") || v.name.includes("Daniel") || v.name.includes("Microsoft") || v.name.includes("David") || v.name.includes("Zira"))
     )
 
     if (!selectedVoice) {
-      selectedVoice = voices.find((v) => v.lang.startsWith("en") && v.localService === true)
+      selectedVoice = voices.find((v) => 
+        v.lang.startsWith("en") && 
+        v.localService === true &&
+        !v.name.includes("Online") &&
+        !v.name.includes("Natural")
+      )
     }
 
     if (!selectedVoice) {
       selectedVoice = voices.find((v) => 
         v.lang.startsWith("en") && 
-        (v.name.includes("Google") || v.name.includes("Samantha") || v.name.includes("Daniel"))
+        !v.name.includes("Online") &&
+        !v.name.includes("Natural")
       )
     }
 
@@ -342,7 +367,7 @@ Rules:
 
     utterance.onend = () => setStatus("idle")
     utterance.onerror = () => setStatus("idle")
-    speechSynthesis.speak(utterance)
+    window.speechSynthesis.speak(utterance)
   }
 
   /* ── Keyboard shortcuts ── */
@@ -378,10 +403,26 @@ Rules:
 
   /* ── Preload voices ── */
   useEffect(() => {
-    speechSynthesis.getVoices()
-    const cb = () => speechSynthesis.getVoices()
-    speechSynthesis.addEventListener?.("voiceschanged", cb)
-    return () => speechSynthesis.removeEventListener?.("voiceschanged", cb)
+    if (typeof window === "undefined" || !window.speechSynthesis) return
+    
+    const loadVoices = () => {
+      window.speechSynthesis.getVoices()
+    }
+    loadVoices()
+    
+    if (window.speechSynthesis.addEventListener) {
+      window.speechSynthesis.addEventListener("voiceschanged", loadVoices)
+    } else {
+      window.speechSynthesis.onvoiceschanged = loadVoices
+    }
+    
+    return () => {
+      if (window.speechSynthesis.removeEventListener) {
+        window.speechSynthesis.removeEventListener("voiceschanged", loadVoices)
+      } else {
+        window.speechSynthesis.onvoiceschanged = null
+      }
+    }
   }, [])
 
   const handleClosePanel = () => {
