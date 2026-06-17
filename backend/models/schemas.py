@@ -33,3 +33,52 @@ class Alert(BaseModel):
     dismissed: bool = False
     top_factors: List[str] = []
 
+
+class HospitalSettings(BaseModel):
+    hospital_name: str
+    timezone: str
+    date_format: str
+    time_format: str
+    language: str
+    default_unit_system: str
+
+
+class ThresholdSettings(BaseModel):
+    lactate_warning: float
+    lactate_critical: float
+    heart_rate_high: float
+    respiratory_rate_high: float
+    spo2_low: float
+    temperature_high: float
+    systolic_bp_low: float
+
+
+class NotificationSettings(BaseModel):
+    email_enabled: bool
+    sms_enabled: bool
+    push_enabled: bool
+    escalation_minutes: int
+    on_call_team: str
+    quiet_hours_start: str
+    quiet_hours_end: str
+
+
+class UserRoleSettings(BaseModel):
+    id: str
+    name: str
+    access_level: str
+    members: int
+    active: bool
+    scope: str
+
+
+class SettingsUpdatePayload(BaseModel):
+    hospital: HospitalSettings
+    thresholds: ThresholdSettings
+    notifications: NotificationSettings
+    roles: List[UserRoleSettings]
+
+
+class SettingsSnapshot(SettingsUpdatePayload):
+    updated_at: str
+

@@ -39,6 +39,55 @@ export type PredictionResult = {
   }
 }
 
+export type HospitalSettings = {
+  hospital_name: string
+  timezone: string
+  date_format: string
+  time_format: string
+  language: string
+  default_unit_system: string
+}
+
+export type ThresholdSettings = {
+  lactate_warning: number
+  lactate_critical: number
+  heart_rate_high: number
+  respiratory_rate_high: number
+  spo2_low: number
+  temperature_high: number
+  systolic_bp_low: number
+}
+
+export type NotificationSettings = {
+  email_enabled: boolean
+  sms_enabled: boolean
+  push_enabled: boolean
+  escalation_minutes: number
+  on_call_team: string
+  quiet_hours_start: string
+  quiet_hours_end: string
+}
+
+export type RoleSettings = {
+  id: string
+  name: string
+  access_level: string
+  members: number
+  active: boolean
+  scope: string
+}
+
+export type SettingsDraft = {
+  hospital: HospitalSettings
+  thresholds: ThresholdSettings
+  notifications: NotificationSettings
+  roles: RoleSettings[]
+}
+
+export type SettingsSnapshot = SettingsDraft & {
+  updated_at: string
+}
+
 const getApiBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_API_BASE_URL) {
     return process.env.NEXT_PUBLIC_API_BASE_URL
@@ -113,6 +162,23 @@ export const runPrediction = async (patient: PatientRecord): Promise<PredictionR
       lactate: patient.lactate,
       creatinine: patient.creatinine,
     }),
+  })
+}
+
+export const getSettings = async (): Promise<SettingsSnapshot> => {
+  return safeFetch<SettingsSnapshot>('/settings')
+}
+
+export const saveSettings = async (settings: SettingsDraft): Promise<SettingsSnapshot> => {
+  return safeFetch<SettingsSnapshot>('/settings', {
+    method: 'PATCH',
+    body: JSON.stringify(settings),
+  })
+}
+
+export const resetSettings = async (): Promise<SettingsSnapshot> => {
+  return safeFetch<SettingsSnapshot>('/settings/reset', {
+    method: 'POST',
   })
 }
 

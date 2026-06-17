@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.alerts import router as alerts_router
 from routes.patients import router as patients_router, advance_simulation
 from routes.predictions import router as predictions_router, predict
+from routes.settings import router as settings_router
 from models.schemas import PatientVitals
 from websocket.manager import ConnectionManager
 
@@ -25,6 +26,7 @@ app.add_middleware(
 app.include_router(patients_router)
 app.include_router(alerts_router)
 app.include_router(predictions_router)
+app.include_router(settings_router)
 
 # WebSocket manager
 manager = ConnectionManager()
